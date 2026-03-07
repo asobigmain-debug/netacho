@@ -93,6 +93,7 @@ input:focus,select:focus{background:#fff5f3!important}
 #toast.show{opacity:1}
 #ov{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:600;padding:20px}
 #ov.on{display:flex}
+#ov.on{display:flex}
 #dlgbox{background:white;border-radius:12px;padding:22px;max-width:340px;width:100%}
 #dlgt{font-family:'Noto Serif JP',serif;font-size:15px;font-weight:600;color:var(--verD);margin-bottom:8px}
 #dlgm{font-size:13px;color:var(--text);margin-bottom:12px;line-height:1.7;white-space:pre-wrap}
@@ -100,6 +101,7 @@ input:focus,select:focus{background:#fff5f3!important}
 #dlgbtn{display:flex;gap:10px;justify-content:flex-end}
 .dc{border:1px solid var(--verL);background:white;color:var(--textS);border-radius:6px;padding:8px 16px;font-size:13px;cursor:pointer}
 .do{background:var(--ver);color:white;border:none;border-radius:6px;padding:8px 16px;font-size:13px;font-weight:600;cursor:pointer}
+.list-hdr{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;font-family:'Noto Serif JP',serif;font-weight:700;font-size:16px;color:var(--text);border-bottom:1px solid var(--verL)}
 .hidden{display:none!important}
 @media print{#header,#tab-bar,#search-bar,#sort-bar,.arow,.save-btn,#ov{display:none!important}body{background:white}.det-head{background:var(--verD)!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}}
 
@@ -297,9 +299,19 @@ function bldTop() {
        '<option value="cnt-asc"' + (TSORT==='cnt-asc'?' selected':'') + '>\u4ef6\u6570\u5c11\u3044\u9806</option>' +
        '</select></div>';
 
+  // 年号もTSORT適用
+  var sortedYT = yt.slice();
+  if (TSORT === 'name-asc' || TSORT === 'cnt-asc') {
+    sortedYT.sort(function(a,b){ return parseInt(a)-parseInt(b); });
+  } else if (TSORT === 'name-desc') {
+    sortedYT.sort(function(a,b){ return parseInt(b)-parseInt(a); });
+  } else if (TSORT === 'cnt-desc') {
+    sortedYT.sort(function(a,b){ return (DB[b]||[]).length-(DB[a]||[]).length; });
+  }
+
   h += '<div class="sec-lbl">\u5e74\u5225</div>';
-  for (var i=0; i<yt.length; i++) {
-    var t = yt[i];
+  for (var i=0; i<sortedYT.length; i++) {
+    var t = sortedYT[i];
     var n = (DB[t]||[]).length;
     h += '<div class="kai-card" data-tab="'+esc(t)+'">' +
          '<div><div class="kai-name">'+esc(t)+'\u5e74</div>' +
@@ -307,9 +319,15 @@ function bldTop() {
          '<span style="color:var(--verL);font-size:20px">\u203a</span></div>';
   }
 
+  var sortedREG = REG.slice();
+  if (TSORT === 'name-asc') sortedREG.sort(function(a,b){ return a.localeCompare(b,'ja'); });
+  else if (TSORT === 'name-desc') sortedREG.sort(function(a,b){ return b.localeCompare(a,'ja'); });
+  else if (TSORT === 'cnt-desc') sortedREG.sort(function(a,b){ return (DB[b]||[]).length-(DB[a]||[]).length; });
+  else if (TSORT === 'cnt-asc') sortedREG.sort(function(a,b){ return (DB[a]||[]).length-(DB[b]||[]).length; });
+
   h += '<div class="sec-lbl">\u5b9a\u671f\u4f1a</div>';
-  for (var j=0; j<REG.length; j++) {
-    var t2 = REG[j];
+  for (var j=0; j<sortedREG.length; j++) { var REG_j = sortedREG[j];
+    var t2 = REG_j;
     var n2 = (DB[t2]||[]).length;
     h += '<div class="kai-card" data-tab="'+esc(t2)+'">' +
          '<div><div class="kai-name">'+esc(t2)+'</div>' +
@@ -317,6 +335,17 @@ function bldTop() {
          '<div style="display:flex;gap:6px;align-items:center">' +
          '<button class="sm-btn" data-rnm="'+esc(t2)+'">\u540d\u524d\u5909\u66f4</button>' +
          '<span style="color:var(--verL);font-size:20px">\u203a</span></div></div>';
+  }
+
+  // TSORT適用
+  if (TSORT === 'name-asc') {
+    ot.sort(function(a,b){ return a.localeCompare(b,'ja'); });
+  } else if (TSORT === 'name-desc') {
+    ot.sort(function(a,b){ return b.localeCompare(a,'ja'); });
+  } else if (TSORT === 'cnt-desc') {
+    ot.sort(function(a,b){ return (DB[b]||[]).length-(DB[a]||[]).length; });
+  } else if (TSORT === 'cnt-asc') {
+    ot.sort(function(a,b){ return (DB[a]||[]).length-(DB[b]||[]).length; });
   }
 
   if (ot.length > 0) {
@@ -385,7 +414,7 @@ function srted(arr) {
 function bldList(tab) {
   var el = document.getElementById('view-list');
   var arr = srted(DB[tab]||[]);
-  var h = '<div class="list-hdr">'+esc(tab)+'</div>';
+  var h = '<div class="list-hdr"><span>'+esc(tab)+'</span>' + (!/^\\d+$/.test(tab) ? '<button class="sm-btn" id="brnm-list">\u540d\u524d\u5909\u66f4</button>' : '') + '</div>';
   if (arr.length === 0) {
     h += '<div style="padding:24px;text-align:center;color:var(--textS)">\u307e\u3060\u30c7\u30fc\u30bf\u304c\u3042\u308a\u307e\u305b\u3093</div>';
   } else {
@@ -408,6 +437,9 @@ function bldList(tab) {
   }
   h += '<button class="add-btn" id="badd-ses">+ \u56de\u3092\u8ffd\u52a0</button>';
   el.innerHTML = h;
+
+  var brnm = document.getElementById('brnm-list');
+  if (brnm) brnm.onclick = function(){ rnmKai(CT); };
 
   var rows = el.querySelectorAll('.ses-row');
   for (var ri=0; ri<rows.length; ri++) {
