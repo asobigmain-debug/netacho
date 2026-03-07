@@ -535,11 +535,10 @@ function editSes(realIdx) {
 }
 
 function delSes(realIdx) {
-  dlg('\u3053\u306e\u56de\u3092\u524a\u9664\u3057\u307e\u3059\u304b\uff1f', '\u524a\u9664', function(){
-    DB[CT].splice(realIdx,1);
-    sdb(); bldList(CT); back(); back();
-    toast('\u524a\u9664\u3057\u307e\u3057\u305f');
-  });
+  if (!window.confirm('\u3053\u306e\u56de\u3092\u524a\u9664\u3057\u307e\u3059\u304b\uff1f')) return;
+  DB[CT].splice(realIdx,1);
+  sdb(); bldList(CT); back(); back();
+  toast('\u524a\u9664\u3057\u307e\u3057\u305f');
 }
 
 function openTab(t) {
@@ -549,32 +548,35 @@ function openTab(t) {
 }
 
 function addKai() {
-  dlg('\u65b0\u3057\u3044\u4f1a\u306e\u540d\u524d', '\u8ffd\u52a0', function(n){
-    if (!n) return;
-    if (DB[n]) { toast('\u3059\u3067\u306b\u5b58\u5728\u3057\u307e\u3059'); return; }
-    DB[n]=[]; sdb(); bldTabs(); bldTop();
-    toast('\u300c'+n+'\u300d\u3092\u8ffd\u52a0\u3057\u307e\u3057\u305f');
-  }, true);
+  var n = window.prompt('\u65b0\u3057\u3044\u4f1a\u306e\u540d\u524d\u3092\u5165\u529b\u3057\u3066\u304f\u3060\u3055\u3044');
+  if (n === null || n.trim() === '') return;
+  n = n.trim();
+  if (DB[n]) { toast('\u300c'+n+'\u300d\u306f\u3059\u3067\u306b\u5b58\u5728\u3057\u307e\u3059'); return; }
+  DB[n]=[]; sdb(); bldTabs(); bldTop();
+  toast('\u300c'+n+'\u300d\u3092\u8ffd\u52a0\u3057\u307e\u3057\u305f');
 }
 
 function rnmKai(tab) {
-  dlg('\u65b0\u3057\u3044\u540d\u524d', '\u5909\u66f4', function(n){
-    if (!n) return;
-    if (DB[n]) { toast('\u3059\u3067\u306b\u5b58\u5728\u3057\u307e\u3059'); return; }
-    DB[n]=DB[tab]; delete DB[tab];
-    sdb(); if(CT===tab)CT=n; bldTabs();
-    if (STK.includes('list')) bldList(CT); else bldTop();
-    toast('\u300c'+tab+'\u300d\u2192\u300c'+n+'\u300d');
-  }, true);
+  var n = window.prompt('\u300c'+tab+'\u300d\u306e\u65b0\u3057\u3044\u540d\u524d\u3092\u5165\u529b\u3057\u3066\u304f\u3060\u3055\u3044', tab);
+  if (n === null || n.trim() === '') return;
+  n = n.trim();
+  if (n === tab) return;
+  if (DB[n]) { toast('\u300c'+n+'\u300d\u306f\u3059\u3067\u306b\u5b58\u5728\u3057\u307e\u3059'); return; }
+  DB[n]=DB[tab]; delete DB[tab];
+  sdb();
+  if (CT===tab) CT=n;
+  bldTabs();
+  if (CT && STK.length > 0) bldList(CT);
+  bldTop();
+  toast('\u300c'+tab+'\u300d\u2192\u300c'+n+'\u300d\u306b\u5909\u66f4\u3057\u307e\u3057\u305f');
 }
 
 function delKai(tab) {
-  dlg('\u300c'+tab+'\u300d\u3092\u524a\u9664\u3057\u307e\u3059\u304b\uff1f', '\u524a\u9664', function(){
-    delete DB[tab];
-    sdb(); if(CT===tab){CT=''; document.getElementById('htitle').textContent='\u6839\u591a\u5e33';}
-    bldTabs(); bldTop();
-    toast('\u300c'+tab+'\u300d\u3092\u524a\u9664\u3057\u307e\u3057\u305f');
-  });
+  if (!window.confirm('\u300c'+tab+'\u300d\u3092\u524a\u9664\u3057\u307e\u3059\u304b\uff1f')) return;
+  delete DB[tab];
+  sdb(); if(CT===tab){CT=''; document.getElementById('tab-bar').classList.add('hidden');}
+  bldTabs(); bldTop();
+  toast('\u300c'+tab+'\u300d\u3092\u524a\u9664\u3057\u307e\u3057\u305f');
 }
 
 function dlg(title, ok, cb, hasInput) {
