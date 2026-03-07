@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>\u6839\u591a\u5e33 | \u6b64\u82b1\u5343\u9ce5\u4ead</title>
+<title>根多帳 | 此花千鳥亭</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700&family=Noto+Sans+JP:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -31,6 +31,11 @@ input:focus,select:focus{background:#fff5f3!important}
 #sort-bar label{font-size:11px;color:var(--textS);font-family:'Noto Serif JP',serif}
 #sort-select{border:1px solid var(--verL);border-radius:6px;padding:4px 8px;font-size:12px;color:var(--text);background:white}
 #view-top{padding:14px}
+#export-menu{position:absolute;top:56px;right:12px;background:white;border:1px solid var(--verL);border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.15);z-index:200;min-width:180px}
+.emenu-item{display:block;width:100%;padding:12px 16px;text-align:left;background:none;border:none;font-size:14px;color:var(--text);cursor:pointer;font-family:'Noto Sans JP',sans-serif}
+.emenu-item:hover{background:var(--verLL)}
+#top-sort{padding:8px 14px 0;display:flex;gap:8px;align-items:center}
+#top-sort select{border:1px solid var(--verL);border-radius:6px;padding:4px 8px;font-size:12px;color:var(--text);background:white}
 .sec-lbl{font-family:'Noto Serif JP',serif;font-size:12px;color:var(--textS);margin:16px 0 8px;padding-left:4px;border-left:3px solid var(--verL)}
 .kai-card{background:white;border:1px solid var(--verL);border-left:4px solid var(--ver);border-radius:8px;padding:12px 14px;margin-bottom:8px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;transition:all .12s}
 .kai-card:active{background:var(--verLL)}
@@ -105,27 +110,33 @@ input:focus,select:focus{background:#fff5f3!important}
 <div id="app">
   <header id="hdr">
     <div id="htitle-wrap">
-      <div id="htitle">\u6839\u591a\u5e33</div>
-      <div id="hsubtitle">\u6b64\u82b1\u5343\u9ce5\u4ead</div>
+      <div id="htitle">根多帳</div>
+      <div id="hsubtitle">此花千鳥亭</div>
     </div>
     <div id="hbtns">
-      <button id="bsch" class="hbtn hbtn-out">\u691c\u7d22</button>
-      <button id="bsv" class="hbtn hbtn-fill">\u4fdd\u5b58</button>
+      <button id="bsch" class="hbtn hbtn-out">検索</button>
+      <button id="bsv" class="hbtn hbtn-fill">書き出し ▾</button>
+    </div>
+    <div id="export-menu" class="hidden">
+      <button class="emenu-item" data-act="json">💾 JSONバックアップ</button>
+      <button class="emenu-item" data-act="txt">📄 テキスト書き出し</button>
+      <button class="emenu-item" data-act="print">🖨 印刷・PDF</button>
     </div>
   </header>
 
   <div id="search-bar" class="hidden">
-    <input id="sinp" placeholder="\u6f14\u76ee\u30fb\u6f14\u8005\u30fb\u4f1a\u540d\u3067\u691c\u7d22\u2026">
-    <button id="bsc" class="hbtn hbtn-out">\u9589\u3058\u308b</button>
+    <input id="sinp" placeholder="演目・演者・会名で検索…">
+    <button id="bsc" class="hbtn hbtn-out">閉じる</button>
   </div>
 
   <div id="sort-bar" class="hidden">
     <select id="sort-sel">
-      <option value="date-desc">\u65e5\u4ed8\u65b0\u3057\u3044\u9806</option>
-      <option value="date-asc">\u65e5\u4ed8\u53e4\u3044\u9806</option>
-      <option value="kaisu-asc">\u56de\u6570\u5c11\u306a\u3044\u9806</option>
-      <option value="kaisu-desc">\u56de\u6570\u591a\u3044\u9806</option>
-      <option value="title-asc">\u30bf\u30a4\u30c8\u30eb\u9806</option>
+      <option value="date-desc">日付新しい順</option>
+      <option value="date-asc">日付古い順</option>
+      <option value="kaisu-asc">回数少ない順</option>
+      <option value="kaisu-desc">回数多い順</option>
+      <option value="title-asc">演目名 A→Z</option>
+      <option value="title-desc">演目名 Z→A</option>
     </select>
   </div>
 
@@ -138,14 +149,14 @@ input:focus,select:focus{background:#fff5f3!important}
   <div id="view-search-results" class="hidden"></div>
 </div>
 
-<button id="bbk" class="hidden">\u2190 \u623b\u308b</button>
+<button id="bbk" class="hidden">← 戻る</button>
 
 <div id="ov" class="ov">
   <div class="dlg">
     <div id="dlgt" class="dlg-title"></div>
     <input id="dlgi" class="dlg-inp" type="text">
     <div class="dlg-btns">
-      <button id="dlgc" class="sm-btn">\u30ad\u30e3\u30f3\u30bb\u30eb</button>
+      <button id="dlgc" class="sm-btn">キャンセル</button>
       <button id="dlgo" class="sm-btn sm-btn-ok">OK</button>
     </div>
   </div>
@@ -207,7 +218,7 @@ function toast(msg) {
 function ytabs() {
   var y = new Date().getFullYear();
   var yrs = [];
-  for (var i = y+1; i >= 2019; i--) yrs.push(String(i));
+  for (var i = y; i >= 2019; i--) yrs.push(String(i));
   return yrs;
 }
 
@@ -274,7 +285,17 @@ function bldTop() {
   var el = document.getElementById('view-top');
   var yt = ytabs();
   var ot = otabs();
+  var TSORT = window.TOP_SORT || 'default';
   var h = '';
+
+  h += '<div id="top-sort"><span style="font-size:12px;color:var(--textS)">\u4e26\u3073\u66ff\u3048:</span>' +
+       '<select id="top-sort-sel">' +
+       '<option value="default"' + (TSORT==='default'?' selected':'') + '>\u6a19\u6e96</option>' +
+       '<option value="name-asc"' + (TSORT==='name-asc'?' selected':'') + '>\u540d\u524d A\u2192Z</option>' +
+       '<option value="name-desc"' + (TSORT==='name-desc'?' selected':'') + '>\u540d\u524d Z\u2192A</option>' +
+       '<option value="cnt-desc"' + (TSORT==='cnt-desc'?' selected':'') + '>\u4ef6\u6570\u591a\u3044\u9806</option>' +
+       '<option value="cnt-asc"' + (TSORT==='cnt-asc'?' selected':'') + '>\u4ef6\u6570\u5c11\u3044\u9806</option>' +
+       '</select></div>';
 
   h += '<div class="sec-lbl">\u5e74\u5225</div>';
   for (var i=0; i<yt.length; i++) {
@@ -343,6 +364,11 @@ function bldTop() {
   }
   var bAdd = document.getElementById('badd');
   if (bAdd) bAdd.onclick = addKai;
+  var tss = document.getElementById('top-sort-sel');
+  if (tss) tss.onchange = function(){
+    window.TOP_SORT = this.value;
+    bldTop();
+  };
 }
 
 function srted(arr) {
@@ -352,6 +378,7 @@ function srted(arr) {
   else if (SORT === 'kaisu-asc') a.sort(function(x,y){ return parseInt(x.kaisu||0)-parseInt(y.kaisu||0); });
   else if (SORT === 'kaisu-desc') a.sort(function(x,y){ return parseInt(y.kaisu||0)-parseInt(x.kaisu||0); });
   else if (SORT === 'title-asc') a.sort(function(x,y){ return (x.title||'').localeCompare(y.title||''); });
+  else if (SORT === 'title-desc') a.sort(function(x,y){ return (y.title||'').localeCompare(x.title||''); });
   return a;
 }
 
@@ -594,22 +621,49 @@ document.getElementById('bbk').onclick = function(){
   }
 };
 
-document.getElementById('bsv').onclick = function(){
-  var arr = DB[CT]||[];
-  var lines = ['\u25a0 ' + CT + '\n'];
-  arr.forEach(function(s){
-    lines.push((s.kaisu?'\u7b2c'+s.kaisu+'\u56de ':'')+s.date+' '+s.title);
-    (s.programs||[]).forEach(function(p){
-      lines.push('  \u300c'+p.neta+'\u300d'+(p.enjya?' '+p.enjya:''));
+document.getElementById('bsv').onclick = function(e){
+  e.stopPropagation();
+  var m = document.getElementById('export-menu');
+  m.classList.toggle('hidden');
+};
+document.addEventListener('click', function(){
+  document.getElementById('export-menu').classList.add('hidden');
+});
+document.getElementById('export-menu').onclick = function(e){
+  var act = e.target.getAttribute('data-act');
+  if (!act) return;
+  document.getElementById('export-menu').classList.add('hidden');
+  if (act === 'json') {
+    var blob = new Blob([JSON.stringify(DB,null,2)],{type:'application/json'});
+    var u2 = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href=u2; a.download='netacho_backup_'+new Date().toISOString().slice(0,10)+'.json';
+    a.click(); URL.revokeObjectURL(u2);
+    toast('\u30d0\u30c3\u30af\u30a2\u30c3\u30d7\u3092\u4fdd\u5b58\u3057\u307e\u3057\u305f');
+  } else if (act === 'txt') {
+    var tab = CT || null;
+    var tabs = tab ? [tab] : Object.keys(DB);
+    var lines = [];
+    tabs.forEach(function(t){
+      lines.push('\u25a0 ' + t + '\n');
+      (DB[t]||[]).forEach(function(s){
+        lines.push((s.kaisu?'\u7b2c'+s.kaisu+'\u56de ':'')+s.date+' '+(s.title||''));
+        (s.programs||[]).forEach(function(p){
+          lines.push('  \u300c'+(p.neta||'')+'\u300d'+(p.enjya?' '+p.enjya:''));
+        });
+        lines.push('');
+      });
+      lines.push('');
     });
-    lines.push('');
-  });
-  var blob=new Blob([lines.join('\n')],{type:'text/plain'});
-  var u2=URL.createObjectURL(blob);
-  var a=document.createElement('a');
-  a.href=u2; a.download=(CT||'netacho')+'_'+new Date().toISOString().slice(0,10)+'.txt';
-  a.click(); URL.revokeObjectURL(u2);
-  toast('\u66f8\u304d\u51fa\u3057\u307e\u3057\u305f');
+    var blob = new Blob([lines.join('\n')],{type:'text/plain;charset=utf-8'});
+    var u2 = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href=u2; a.download=(tab||'netacho_all')+'_'+new Date().toISOString().slice(0,10)+'.txt';
+    a.click(); URL.revokeObjectURL(u2);
+    toast('\u30c6\u30ad\u30b9\u30c8\u3092\u4fdd\u5b58\u3057\u307e\u3057\u305f');
+  } else if (act === 'print') {
+    window.print();
+  }
 };
 
 // Start
