@@ -125,7 +125,7 @@ input:focus,select:focus{background:#fff5f3!important}
 <div id="view-list" class="hidden"></div>
 <div id="view-detail" class="hidden"></div>
 <div id="view-edit" class="hidden"></div>
-<div id="search-results" class="hidden"></div>
+<div id="view-search-results" class="hidden"></div>
 <button id="sbtn" class="save-btn">保存する ✓</button>
 <div id="toast"></div>
 <div id="ov"><div id="dlgbox">
@@ -264,10 +264,10 @@ function rnmKai(tab){dlg({title:'\u4f1a\u540d\u3092\u5909\u66f4',inp:true,val:ta
 function delKai(tab){var n=(DB[tab]||[]).length;dlg({title:'\u300c'+tab+'\u300d\u3092\u524a\u9664',msg:'\u8a18\u9332'+n+'\u4ef6\u3092\u3059\u3079\u3066\u524a\u9664\u3057\u307e\u3059\u3002
 \u5143\u306b\u623b\u305b\u307e\u305b\u3093\u3002',ok:'\u524a\u9664\u3059\u308b',onOk:function(){delete DB[tab];sdb();if(CT===tab){CT=null;STK=[];showV('top');document.getElementById('bbk').classList.add('hidden');document.getElementById('htitle').textContent='\u6839\u591a\u5e33';}bldTabs();bldTop();toast('\u300c'+tab+'\u300d\u3092\u524a\u9664\u3057\u307e\u3057\u305f');}});}
 
-document.getElementById('bsrch').onclick=function(){document.getElementById('search-bar').classList.remove('hidden');showV('search-results');document.getElementById('search-results').innerHTML='<div style="text-align:center;padding:30px;color:var(--textS)">\u30ad\u30fc\u30ef\u30fc\u30c9\u3092\u5165\u529b\u3057\u3066\u304f\u3060\u3055\u3044</div>';document.getElementById('sinp').focus();};
+document.getElementById('bsrch').onclick=function(){document.getElementById('search-bar').classList.remove('hidden');showV('search-results');document.getElementById('view-search-results').innerHTML='<div style="text-align:center;padding:30px;color:var(--textS)">\u30ad\u30fc\u30ef\u30fc\u30c9\u3092\u5165\u529b\u3057\u3066\u304f\u3060\u3055\u3044</div>';document.getElementById('sinp').focus();};
 document.getElementById('bsc').onclick=function(){document.getElementById('search-bar').classList.add('hidden');document.getElementById('sinp').value='';if(STK.length)showV(STK[STK.length-1]);else{showV('top');bldTop();}};
 document.getElementById('sinp').addEventListener('input',function(){
-  var q=this.value.trim(),el=document.getElementById('search-results');
+  var q=this.value.trim(),el=document.getElementById('view-search-results');
   if(!q){el.innerHTML='<div style="text-align:center;padding:30px;color:var(--textS)">\u30ad\u30fc\u30ef\u30fc\u30c9\u3092\u5165\u529b\u3057\u3066\u304f\u3060\u3055\u3044</div>';return;}
   var res=[];
   Object.keys(DB).forEach(function(tab){(DB[tab]||[]).forEach(function(s,i){if(s.programs.some(function(p){return(p.neta||'').includes(q)||(p.enjya||'').includes(q);})||(s.title||'').includes(q)||(s.date||'').includes(q))res.push({tab:tab,i:i,s:s});});});
