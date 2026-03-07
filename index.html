@@ -91,8 +91,13 @@ input:focus,select:focus{background:#fff5f3!important}
 .sri-n{font-size:11px;color:var(--textS);margin-top:2px}
 #toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--verD);color:white;padding:9px 20px;border-radius:24px;font-size:13px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:500;white-space:nowrap}
 #toast.show{opacity:1}
-#ov{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:600;padding:20px}
+#ov{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.55);display:none;align-items:flex-start;justify-content:center;z-index:9999;padding-top:120px;-webkit-overflow-scrolling:touch}
 #ov.on{display:flex}
+.dlg{background:#fff;border-radius:14px;padding:24px 20px 16px;width:calc(100% - 40px);max-width:340px;box-shadow:0 8px 32px rgba(0,0,0,.25)}
+.dlg-title{font-size:16px;font-weight:700;margin-bottom:14px;color:#2c1a18;font-family:'Noto Serif JP',serif}
+.dlg-inp{width:100%;box-sizing:border-box;padding:10px 12px;border:1.5px solid #c0392b;border-radius:8px;font-size:16px;margin-bottom:16px;color:#2c1a18;background:#fff;-webkit-appearance:none;appearance:none;display:block}
+.dlg-inp:focus{outline:none;border-color:#8b2218}
+.dlg-btns{display:flex;gap:8px;justify-content:flex-end}
 #ov.on{display:flex}
 #dlgbox{background:white;border-radius:12px;padding:22px;max-width:340px;width:100%}
 #dlgt{font-family:'Noto Serif JP',serif;font-size:15px;font-weight:600;color:var(--verD);margin-bottom:8px}
@@ -153,13 +158,13 @@ input:focus,select:focus{background:#fff5f3!important}
 
 <button id="bbk" class="hidden">← 戻る</button>
 
-<div id="ov" class="ov">
+<div id="ov">
   <div class="dlg">
     <div id="dlgt" class="dlg-title"></div>
-    <input id="dlgi" class="dlg-inp" type="text">
+    <input id="dlgi" class="dlg-inp" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
     <div class="dlg-btns">
       <button id="dlgc" class="sm-btn">キャンセル</button>
-      <button id="dlgo" class="sm-btn sm-btn-ok">OK</button>
+      <button id="dlgo" class="sm-btn sm-btn-ok">変更</button>
     </div>
   </div>
 </div>
@@ -193,7 +198,7 @@ var REG = [
   '\u9023\u7d9a\u8b1b\u8ac7\u5343\u9ce5\u4ead',
   '\u6708\u66dc\u304a\u6607\u5bc4\u5e2d',
   '\u6c34\u66dc\u5343\u9ce5\u4ead',
-  '\u6607\u304b\u3089\u6728\u66dc\u5bc4\u5e2d'
+  '\u663c\u304b\u3089\u6728\u66dc\u5bc4\u5e2d'
 ];
 
 function sdb() {
@@ -218,10 +223,13 @@ function toast(msg) {
 }
 
 function ytabs() {
-  var y = new Date().getFullYear();
-  var yrs = [];
-  for (var i = y; i >= 2019; i--) yrs.push(String(i));
-  return yrs;
+  // collect year keys
+  var base = parseInt(localStorage.getItem('netacho_yr_min') || '2019');
+  var top  = parseInt(localStorage.getItem('netacho_yr_max') || String(new Date().getFullYear()));
+  var set = {};
+  for (var i = top; i >= base; i--) set[String(i)] = true;
+  Object.keys(DB).forEach(function(k){ if (/^\d{4}$/.test(k)) set[k] = true; });
+  return Object.keys(set).sort(function(a,b){ return parseInt(b)-parseInt(a); });
 }
 
 function otabs() {
@@ -299,7 +307,7 @@ function bldTop() {
        '<option value="cnt-asc"' + (TSORT==='cnt-asc'?' selected':'') + '>\u4ef6\u6570\u5c11\u3044\u9806</option>' +
        '</select></div>';
 
-  // 年号もTSORT適用
+  // year sort
   var sortedYT = yt.slice();
   if (TSORT === 'name-asc' || TSORT === 'cnt-asc') {
     sortedYT.sort(function(a,b){ return parseInt(a)-parseInt(b); });
@@ -337,7 +345,7 @@ function bldTop() {
          '<span style="color:var(--verL);font-size:20px">\u203a</span></div></div>';
   }
 
-  // TSORT適用
+  // ot sort
   if (TSORT === 'name-asc') {
     ot.sort(function(a,b){ return a.localeCompare(b,'ja'); });
   } else if (TSORT === 'name-desc') {
@@ -364,6 +372,7 @@ function bldTop() {
   }
 
   h += '<button class="add-btn" id="badd">+ \u4f1a\u3092\u8ffd\u52a0</button>';
+  h += '<button class="add-btn add-btn-yr" id="badd-yr">+ \u5e74\u3092\u8ffd\u52a0 / \u5909\u66f4</button>';
   el.innerHTML = h;
 
   // Attach events
@@ -393,6 +402,8 @@ function bldTop() {
   }
   var bAdd = document.getElementById('badd');
   if (bAdd) bAdd.onclick = addKai;
+  var bAddYr = document.getElementById('badd-yr');
+  if (bAddYr) bAddYr.onclick = addYear;
   var tss = document.getElementById('top-sort-sel');
   if (tss) tss.onchange = function(){
     window.TOP_SORT = this.value;
@@ -535,10 +546,11 @@ function editSes(realIdx) {
 }
 
 function delSes(realIdx) {
-  if (!window.confirm('\u3053\u306e\u56de\u3092\u524a\u9664\u3057\u307e\u3059\u304b\uff1f')) return;
-  DB[CT].splice(realIdx,1);
-  sdb(); bldList(CT); back(); back();
-  toast('\u524a\u9664\u3057\u307e\u3057\u305f');
+  dlg('\u3053\u306e\u56de\u3092\u524a\u9664\u3057\u307e\u3059\u304b\uff1f', '\u524a\u9664', function(){
+    DB[CT].splice(realIdx,1);
+    sdb(); bldList(CT); back(); back();
+    toast('\u524a\u9664\u3057\u307e\u3057\u305f');
+  }, null);
 }
 
 function openTab(t) {
@@ -547,46 +559,81 @@ function openTab(t) {
   document.getElementById('bbk').classList.remove('hidden');
 }
 
+function addYear() {
+  dlg('\u5e74\u3092\u8ffd\u52a0 / \u524a\u9664\nex: 2018 \u3084 2027\n(\u5165\u529b\u3057\u305f\u5e74\u304c\u306a\u3051\u308c\u3070\u8ffd\u52a0\u3001\u3042\u308c\u3070\u524a\u9664)', '\u5b9f\u884c', function(n){
+    if (!n) return;
+    var yr = n.trim();
+    if (!/^\d{4}$/.test(yr)) { toast('\u534a\u89d2\u65570000\u5f62\u5f0f\u3067\u5165\u529b\u3057\u3066\u304f\u3060\u3055\u3044'); return; }
+    if (DB[yr] !== undefined) {
+      // remove
+      dlg('\u300c'+yr+'\u5e74\u300d\u3092\u30db\u30fc\u30e0\u304b\u3089\u524a\u9664\u3057\u307e\u3059\u304b\uff1f\n(\u30c7\u30fc\u30bf\u306f\u6d88\u3048\u307e\u305b\u3093)', '\u524a\u9664', function(){
+        var base = parseInt(localStorage.getItem('netacho_yr_min')||'2019');
+        var top  = parseInt(localStorage.getItem('netacho_yr_max')||String(new Date().getFullYear()));
+        if (parseInt(yr) <= base && base > 2019) localStorage.setItem('netacho_yr_min', String(base+1));
+        if (parseInt(yr) >= top) localStorage.setItem('netacho_yr_max', String(top-1));
+        bldTop();
+        toast('\u300c'+yr+'\u5e74\u300d\u3092\u30ea\u30b9\u30c8\u304b\u3089\u975e\u8868\u793a\u306b\u3057\u307e\u3057\u305f');
+      }, null);
+    } else {
+      // add
+      if (!DB[yr]) DB[yr] = [];
+      var base = parseInt(localStorage.getItem('netacho_yr_min')||'2019');
+      var top  = parseInt(localStorage.getItem('netacho_yr_max')||String(new Date().getFullYear()));
+      if (parseInt(yr) < base) localStorage.setItem('netacho_yr_min', yr);
+      if (parseInt(yr) > top)  localStorage.setItem('netacho_yr_max', yr);
+      sdb(); bldTop();
+      toast('\u300c'+yr+'\u5e74\u300d\u3092\u8ffd\u52a0\u3057\u307e\u3057\u305f');
+    }
+  }, '');
+}
+
 function addKai() {
-  var n = window.prompt('\u65b0\u3057\u3044\u4f1a\u306e\u540d\u524d\u3092\u5165\u529b\u3057\u3066\u304f\u3060\u3055\u3044');
-  if (n === null || n.trim() === '') return;
-  n = n.trim();
-  if (DB[n]) { toast('\u300c'+n+'\u300d\u306f\u3059\u3067\u306b\u5b58\u5728\u3057\u307e\u3059'); return; }
-  DB[n]=[]; sdb(); bldTabs(); bldTop();
-  toast('\u300c'+n+'\u300d\u3092\u8ffd\u52a0\u3057\u307e\u3057\u305f');
+  dlg('\u65b0\u3057\u3044\u4f1a\u306e\u540d\u524d', '\u8ffd\u52a0', function(n){
+    if (!n) return;
+    if (DB[n]) { toast('\u300c'+n+'\u300d\u306f\u3059\u3067\u306b\u5b58\u5728\u3057\u307e\u3059'); return; }
+    DB[n]=[]; sdb(); bldTabs(); bldTop();
+    toast('\u300c'+n+'\u300d\u3092\u8ffd\u52a0\u3057\u307e\u3057\u305f');
+  }, '');
 }
 
 function rnmKai(tab) {
-  var n = window.prompt('\u300c'+tab+'\u300d\u306e\u65b0\u3057\u3044\u540d\u524d\u3092\u5165\u529b\u3057\u3066\u304f\u3060\u3055\u3044', tab);
-  if (n === null || n.trim() === '') return;
-  n = n.trim();
-  if (n === tab) return;
-  if (DB[n]) { toast('\u300c'+n+'\u300d\u306f\u3059\u3067\u306b\u5b58\u5728\u3057\u307e\u3059'); return; }
-  DB[n]=DB[tab]; delete DB[tab];
-  sdb();
-  if (CT===tab) CT=n;
-  bldTabs();
-  if (CT && STK.length > 0) bldList(CT);
-  bldTop();
-  toast('\u300c'+tab+'\u300d\u2192\u300c'+n+'\u300d\u306b\u5909\u66f4\u3057\u307e\u3057\u305f');
+  dlg('\u300c'+tab+'\u300d\u306e\u65b0\u3057\u3044\u540d\u524d', '\u5909\u66f4', function(n){
+    if (!n || n===tab) return;
+    if (DB[n]) { toast('\u300c'+n+'\u300d\u306f\u3059\u3067\u306b\u5b58\u5728\u3057\u307e\u3059'); return; }
+    DB[n]=DB[tab]; delete DB[tab];
+    sdb(); if(CT===tab)CT=n; bldTabs();
+    if(STK.length>0)bldList(CT); bldTop();
+    toast('\u300c'+tab+'\u300d\u2192\u300c'+n+'\u300d');
+  }, tab);
 }
 
 function delKai(tab) {
-  if (!window.confirm('\u300c'+tab+'\u300d\u3092\u524a\u9664\u3057\u307e\u3059\u304b\uff1f')) return;
-  delete DB[tab];
-  sdb(); if(CT===tab){CT=''; document.getElementById('tab-bar').classList.add('hidden');}
-  bldTabs(); bldTop();
-  toast('\u300c'+tab+'\u300d\u3092\u524a\u9664\u3057\u307e\u3057\u305f');
+  dlg('\u300c'+tab+'\u300d\u3092\u524a\u9664\u3057\u307e\u3059\u304b\uff1f', '\u524a\u9664', function(){
+    delete DB[tab];
+    sdb(); if(CT===tab){CT=''; document.getElementById('tab-bar').classList.add('hidden');}
+    bldTabs(); bldTop();
+    toast('\u300c'+tab+'\u300d\u3092\u524a\u9664\u3057\u307e\u3057\u305f');
+  }, null);
 }
 
-function dlg(title, ok, cb, hasInput) {
+function dlg(title, ok, cb, defaultVal) {
+  var hasInput = (defaultVal !== null && defaultVal !== undefined);
+  var inp = document.getElementById('dlgi');
   document.getElementById('dlgt').textContent = title;
-  document.getElementById('dlgi').style.display = hasInput ? '' : 'none';
-  document.getElementById('dlgi').value = '';
+  inp.style.display = hasInput ? 'block' : 'none';
+  inp.value = hasInput ? (defaultVal||'') : '';
   document.getElementById('dlgo').textContent = ok;
-  DOK = function(){ cb(document.getElementById('dlgi').value.trim()); };
+  DOK = function(){
+    var v = hasInput ? inp.value.trim() : null;
+    cb(v);
+  };
   document.getElementById('ov').classList.add('on');
-  if (hasInput) setTimeout(function(){ document.getElementById('dlgi').focus(); }, 100);
+  if (hasInput) {
+    setTimeout(function(){
+      inp.focus();
+      inp.setSelectionRange(inp.value.length, inp.value.length);
+    }, 150);
+  }
 }
 
 document.getElementById('dlgc').onclick = function(){ document.getElementById('ov').classList.remove('on'); };
