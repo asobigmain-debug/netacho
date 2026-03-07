@@ -146,7 +146,7 @@ function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').
 // DB\u521d\u671f\u5316
 try{var sv=localStorage.getItem('netacho_v1');if(sv)DB=JSON.parse(sv);}catch(e){}
 if(!Object.keys(DB).length){
-  try{DB=JSON.parse(atob(__ND_B64__));}catch(e){DB={};}
+  try{DB=JSON.parse(decodeURIComponent(escape(atob(__ND_B64__))));}catch(e){DB={};}
 }
 (function(){var y=new Date().getFullYear();for(var i=2019;i<=y+1;i++){var k=String(i);if(!DB[k])DB[k]=[];}REG.forEach(function(t){if(!DB[t])DB[t]=[];});})();
 
