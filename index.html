@@ -196,7 +196,7 @@ if (Object.keys(DB).length === 0) {
 
 var REG = [
   '\u9023\u7d9a\u8b1b\u8ac7\u5343\u9ce5\u4ead',
-  '\u6708\u66dc\u304a\u6607\u5bc4\u5e2d',
+  '\u6708\u66dc\u304a\u663c\u5bc4\u5e2d',
   '\u6c34\u66dc\u5343\u9ce5\u4ead',
   '\u663c\u304b\u3089\u6728\u66dc\u5bc4\u5e2d'
 ];
@@ -601,6 +601,8 @@ function rnmKai(tab) {
     if (!n || n===tab) return;
     if (DB[n]) { toast('\u300c'+n+'\u300d\u306f\u3059\u3067\u306b\u5b58\u5728\u3057\u307e\u3059'); return; }
     DB[n]=DB[tab]; delete DB[tab];
+    // REG\u914d\u5217\u3082\u540c\u6642\u306b\u66f4\u65b0
+    var ri=REG.indexOf(tab); if(ri>=0) REG[ri]=n;
     sdb(); if(CT===tab)CT=n; bldTabs();
     if(STK.length>0)bldList(CT); bldTop();
     toast('\u300c'+tab+'\u300d\u2192\u300c'+n+'\u300d');
