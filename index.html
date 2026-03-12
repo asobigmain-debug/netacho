@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>根多帳</title>
+<link rel="manifest" href="netacho_manifest.json">
+<meta name="theme-color" content="#2a3824">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<style>
+:root{--main:#3d4f34;--mainD:#2a3824;--mainL:#7a9a68;--mainLL:#e8f0e4;--washi:#faf8f2;--washiD:#f0ede4;--text:#1e2b1a;--textS:#7a8a74;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;background:var(--washi);color:var(--text);min-height:100vh;}
+.hd{background:var(--mainD);color:white;padding:10px 16px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:100;box-shadow:0 2px 10px rgba(42,56,36,.5);}
+.hd-bar{width:4px;height:26px;background:rgba(255,255,255,.45);border-radius:2px;}
+.hd-title{font-size:1.05rem;letter-spacing:.12em;font-weight:600;flex:1;}
+.hbtn{border:1px solid rgba(255,255,255,.3);border-radius:5px;padding:5px 10px;font-size:11px;cursor:pointer;font-family:inherit;}
+.hbtn-p{background:var(--main);color:white;border-color:transparent;}
+.hbtn-g{background:rgba(255,255,255,.12);color:white;}
+.hbtn-back{background:none;border:none;color:white;font-size:12px;padding:4px 8px;cursor:pointer;}
+#view-cover{background:linear-gradient(150deg,var(--mainD) 0%,var(--main) 55%,var(--mainLL) 100%);min-height:calc(100vh - 46px);padding:20px 16px 50px;}
+.tab-bar{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;}
+.tab-btn{background:rgba(255,255,255,.18);color:white;border:1px solid rgba(255,255,255,.3);border-radius:20px;padding:5px 14px;font-size:12px;cursor:pointer;font-family:inherit;transition:.15s;}
+.tab-btn.active,.tab-btn:hover{background:rgba(255,255,255,.9);color:var(--mainD);}
+.entry-list{display:flex;flex-direction:column;gap:7px;}
+.entry-card{background:rgba(255,255,255,.9);border-left:4px solid var(--mainL);border-radius:6px;padding:10px 12px;cursor:pointer;transition:.12s;}
+.entry-card:hover{transform:translateX(3px);box-shadow:2px 2px 8px rgba(42,56,36,.15);}
+.ec-top{display:flex;align-items:baseline;gap:8px;}
+.ec-kaisu{font-size:11px;color:var(--textS);min-width:30px;}
+.ec-title{font-size:14px;font-weight:600;flex:1;}
+.ec-date{font-size:11px;color:var(--textS);}
+.ec-programs{font-size:11px;color:var(--textS);margin-top:3px;line-height:1.6;}
+.add-btn{background:rgba(255,255,255,.2);color:white;border:1.5px dashed rgba(255,255,255,.5);border-radius:8px;padding:12px;width:100%;font-size:13px;cursor:pointer;font-family:inherit;margin-top:10px;transition:.15s;}
+.add-btn:hover{background:rgba(255,255,255,.35);}
+.detail-wrap{padding:12px 12px 90px;}
+.detail-head{background:var(--mainLL);border-radius:8px;padding:12px;margin-bottom:10px;}
+.fi{width:100%;border:1px solid #ccc;border-radius:4px;padding:7px 9px;font-size:13px;font-family:inherit;color:var(--text);background:white;}
+.fi:focus{outline:none;border-color:var(--mainL);background:#f6faf4;}
+.lbl{font-size:11px;color:var(--textS);margin-bottom:3px;margin-top:8px;}
+.prog-sec{background:white;border:1px solid var(--mainLL);border-radius:8px;overflow:hidden;margin-bottom:8px;}
+.prog-header{background:var(--main);color:white;padding:7px 12px;display:flex;align-items:center;gap:8px;font-size:12px;}
+.prog-row{display:flex;gap:6px;padding:8px 10px;border-bottom:1px solid var(--mainLL);align-items:center;}
+.prog-row:last-child{border-bottom:none;}
+.prog-num{font-size:11px;color:var(--textS);min-width:20px;}
+.prog-del{background:none;border:1px solid #ddd;border-radius:4px;padding:4px 7px;font-size:11px;cursor:pointer;color:#c00;}
+.save-btn{position:fixed;bottom:22px;right:18px;background:var(--main);color:white;border:none;border-radius:50px;padding:13px 28px;font-size:14px;font-family:inherit;box-shadow:0 4px 18px rgba(61,79,52,.5);z-index:200;display:none;cursor:pointer;}
+.del-btn-sm{background:none;border:1px solid #c00;border-radius:4px;padding:4px 9px;font-size:11px;cursor:pointer;color:#c00;font-family:inherit;}
+.main{padding:14px 14px;max-width:760px;margin:0 auto;}
+.bk-box{background:rgba(255,255,255,.6);border:1px solid var(--mainLL);border-radius:8px;padding:14px;margin-bottom:12px;}
+.bk-ttl{font-size:.9rem;font-weight:600;margin-bottom:5px;}
+.bk-txt{font-size:.78rem;color:var(--textS);line-height:1.8;margin-bottom:10px;}
+.btn{padding:9px 18px;border-radius:5px;font-family:inherit;font-size:.82rem;cursor:pointer;border:none;font-weight:500;}
+.btn-p{background:var(--main);color:white;}
+.btn-s{background:transparent;color:var(--text);border:1.5px solid var(--mainLL);}
+.btn-sm{padding:6px 12px;font-size:.74rem;}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap;}
+.upload-area{border:2px dashed var(--mainL);border-radius:7px;padding:14px;text-align:center;cursor:pointer;position:relative;margin-bottom:6px;}
+.upload-area input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+.prog-msg{font-size:.75rem;color:var(--main);margin-top:6px;min-height:1.2em;}
+.view{display:none;}.view.on{display:block;}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(65px);background:var(--mainD);color:white;padding:10px 20px;border-radius:20px;font-size:.82rem;z-index:999;transition:transform .3s;border-left:4px solid rgba(255,255,255,.4);white-space:nowrap;}
+.toast.on{transform:translateX(-50%) translateY(0);}
+</style>
+</head>
+<body>
+
+<div class="hd">
+  <div class="hd-bar"></div>
+  <button id="btn-back" class="hbtn-back" style="display:none">◀ 戻る</button>
+  <div class="hd-title" id="hd-title">根多帳</div>
+  <button class="hbtn hbtn-g btn-sm" onclick="go('data')">💾 データ</button>
+</div>
+
+<!-- カバー -->
+<div id="view-cover" class="view on">
+  <div class="tab-bar" id="tab-bar"></div>
+  <div class="entry-list" id="entry-list"></div>
+  <button class="add-btn" id="add-entry-btn">＋ この会に新しい回を追加</button>
+</div>
+
+<!-- 詳細編集 -->
+<div id="view-detail" class="view">
+  <div class="detail-wrap">
+    <div class="detail-head">
+      <div class="lbl">会名</div><input class="fi" id="d-kai">
+      <div class="lbl">回数</div><input class="fi" id="d-kaisu" placeholder="例: 第10回">
+      <div class="lbl">日付</div><input class="fi" id="d-date" placeholder="例: 2024年3月1日">
+      <div class="lbl">タイトル</div><input class="fi" id="d-title" placeholder="タイトル（任意）">
+    </div>
+    <div class="prog-sec">
+      <div class="prog-header">
+        <span style="flex:1">📋 演目一覧</span>
+        <button class="hbtn hbtn-g btn-sm" onclick="addProgram()">＋ 演目追加</button>
+      </div>
+      <div id="prog-list"></div>
+    </div>
+    <div style="text-align:right;margin-top:6px">
+      <button class="del-btn-sm" onclick="deleteThisEntry()">🗑 この回を削除</button>
+    </div>
+  </div>
+  <button id="save-btn" class="save-btn" onclick="saveDetail()">保存する ✓</button>
+</div>
+
+<!-- データ管理 -->
+<div id="view-data" class="view main">
+  <div class="bk-box">
+    <div class="bk-ttl">📤 JSONエクスポート</div>
+    <div class="bk-txt">全データをJSONファイルとして書き出します。GAS版への取り込みや端末間バックアップに使えます。</div>
+    <button class="btn btn-p btn-sm" onclick="doExportJSON()">📤 JSON書き出し</button>
+  </div>
+  <div class="bk-box">
+    <div class="bk-ttl">📊 CSVエクスポート</div>
+    <div class="bk-txt">全データをCSV形式で書き出します。GAS版へのインポートやExcel閲覧に使えます。</div>
+    <button class="btn btn-p btn-sm" onclick="doExportCSV()">📊 CSV書き出し</button>
+  </div>
+  <div class="bk-box">
+    <div class="bk-ttl">📥 インポート（JSON / CSV）</div>
+    <div class="bk-txt">GAS版から書き出したJSONまたはCSVを読み込みます。同じ会名＋回数は上書き、新しいものは追加されます。</div>
+    <div class="upload-area">
+      <input type="file" id="import-file" accept=".json,.csv" onchange="doImport(event)">
+      <div style="font-size:.8rem;color:var(--textS)">📂 JSONまたはCSVファイルを選択</div>
+    </div>
+    <div class="prog-msg" id="import-prog"></div>
+  </div>
+  <div class="bk-box">
+    <div class="bk-ttl">ℹ️ データ保存について</div>
+    <div class="bk-txt">データはこの端末のIndexedDB（ブラウザ内ストレージ）に保存されます。定期的にJSONを書き出してGAS版やGoogleドライブにバックアップすることをおすすめします。</div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ===== IndexedDB =====
+var DB_NAME = 'NetachoDB', DB_VER = 1, STORE = 'data';
+var idb;
+
+function openDB(cb) {
+  if (idb) { cb(idb); return; }
+  var req = indexedDB.open(DB_NAME, DB_VER);
+  req.onupgradeneeded = function(e) {
+    e.target.result.createObjectStore(STORE);
+  };
+  req.onsuccess = function(e) { idb = e.target.result; cb(idb); };
+  req.onerror = function() { toast('DBエラー'); };
+}
+
+function loadDB(cb) {
+  openDB(function(db) {
+    var tx = db.transaction(STORE, 'readonly');
+    var req = tx.objectStore(STORE).get('netacho');
+    req.onsuccess = function(e) { cb(e.target.result || {}); };
+  });
+}
+
+function saveDB(data, cb) {
+  openDB(function(db) {
+    var tx = db.transaction(STORE, 'readwrite');
+    tx.objectStore(STORE).put(data, 'netacho');
+    tx.oncomplete = function() { if (cb) cb(); };
+  });
+}
+
+// ===== アプリ状態 =====
+var DB = {};
+var curKai = null, curEntry = null;
+
+function init() {
+  loadDB(function(data) {
+    DB = data || {};
+    buildCover();
+  });
+}
+
+// ===== UI =====
+function toast(m) {
+  var t = document.getElementById('toast');
+  t.textContent = m;
+  t.classList.add('on');
+  setTimeout(function() { t.classList.remove('on'); }, 2500);
+}
+
+function go(id) {
+  ['cover','detail','data'].forEach(function(v) {
+    document.getElementById('view-' + v).classList.remove('on');
+  });
+  document.getElementById('view-' + id).classList.add('on');
+  document.getElementById('btn-back').style.display = (id === 'cover') ? 'none' : 'inline-block';
+  if (id === 'cover') { document.getElementById('hd-title').textContent = '根多帳'; buildCover(); }
+}
+
+document.getElementById('btn-back').onclick = function() { go('cover'); };
+
+// ===== カバー =====
+function buildCover() {
+  var keys = Object.keys(DB);
+  var years = [], others = [];
+  keys.forEach(function(k) { if (/^[0-9]{4}$/.test(k)) years.push(k); else others.push(k); });
+  years.sort().reverse();
+  others.sort();
+  var order = years.concat(others);
+
+  var bar = document.getElementById('tab-bar');
+  bar.innerHTML = '';
+  order.forEach(function(k) {
+    var b = document.createElement('button');
+    b.className = 'tab-btn' + (curKai === k ? ' active' : '');
+    b.textContent = k;
+    b.onclick = function() { curKai = k; buildCover(); };
+    bar.appendChild(b);
+  });
+  // 新会追加
+  var nb = document.createElement('button');
+  nb.className = 'tab-btn';
+  nb.textContent = '＋ 新しい会';
+  nb.onclick = function() {
+    var name = prompt('新しい会名を入力してください（例: 2025 または 千鳥橋寄席）');
+    if (!name) return;
+    if (!DB[name]) DB[name] = [];
+    curKai = name;
+    saveDB(DB, buildCover);
+  };
+  bar.appendChild(nb);
+
+  if (!curKai && order.length > 0) curKai = order[0];
+
+  // タブアクティブ
+  bar.querySelectorAll('.tab-btn').forEach(function(b) {
+    b.classList.toggle('active', b.textContent === curKai);
+  });
+
+  // エントリ一覧
+  var list = document.getElementById('entry-list');
+  list.innerHTML = '';
+  var entries = (DB[curKai] || []).slice().sort(function(a, b) {
+    return String(b.kaisu).localeCompare(String(a.kaisu), 'ja', { numeric: true });
+  });
+  entries.forEach(function(e) {
+    var card = document.createElement('div');
+    card.className = 'entry-card';
+    var progsText = (e.programs || []).map(function(p) {
+      return (p.neta || '') + (p.enjya ? '（' + p.enjya + '）' : '');
+    }).join(' / ');
+    card.innerHTML = '<div class="ec-top">'
+      + '<span class="ec-kaisu">' + esc(e.kaisu) + '</span>'
+      + '<span class="ec-title">' + esc(e.title || '（タイトルなし）') + '</span>'
+      + '<span class="ec-date">' + esc(e.date) + '</span>'
+      + '</div>'
+      + (progsText ? '<div class="ec-programs">' + esc(progsText) + '</div>' : '');
+    card.onclick = function() { openEntry(curKai, e.kaisu); };
+    list.appendChild(card);
+  });
+
+  var addBtn = document.getElementById('add-entry-btn');
+  addBtn.textContent = '＋ ' + (curKai || 'この会') + 'に新しい回を追加';
+  addBtn.onclick = function() { newEntry(); };
+}
+
+// ===== 詳細 =====
+function openEntry(kai, kaisuStr) {
+  curKai = kai;
+  var entries = DB[kai] || [];
+  curEntry = null;
+  for (var i = 0; i < entries.length; i++) {
+    if (String(entries[i].kaisu) === String(kaisuStr)) {
+      curEntry = JSON.parse(JSON.stringify(entries[i])); break;
+    }
+  }
+  if (!curEntry) curEntry = { kaisu: kaisuStr, date: '', title: '', programs: [] };
+  go('detail');
+  document.getElementById('hd-title').textContent = kai + ' ' + kaisuStr;
+  buildDetail();
+}
+
+function newEntry() {
+  curEntry = { kaisu: '', date: '', title: '', programs: [] };
+  go('detail');
+  document.getElementById('hd-title').textContent = (curKai || '') + ' 新規';
+  buildDetail();
+}
+
+function buildDetail() {
+  var e = curEntry;
+  document.getElementById('d-kai').value = curKai || '';
+  document.getElementById('d-kaisu').value = e.kaisu || '';
+  document.getElementById('d-date').value = e.date || '';
+  document.getElementById('d-title').value = e.title || '';
+  renderPrograms();
+  ['d-kai','d-kaisu','d-date','d-title'].forEach(function(id) {
+    document.getElementById(id).oninput = markDirty;
+  });
+  document.getElementById('save-btn').style.display = 'block';
+}
+
+function renderPrograms() {
+  var list = document.getElementById('prog-list');
+  list.innerHTML = '';
+  var progs = curEntry.programs || [];
+  progs.forEach(function(p, i) {
+    var row = document.createElement('div');
+    row.className = 'prog-row';
+    row.innerHTML = '<span class="prog-num">' + (i + 1) + '</span>'
+      + '<input class="fi" style="flex:2" placeholder="ネタ名" value="' + esc(p.neta || '') + '" data-pi="' + i + '" data-pk="neta">'
+      + '<input class="fi" style="flex:1" placeholder="演者" value="' + esc(p.enjya || '') + '" data-pi="' + i + '" data-pk="enjya">'
+      + '<button class="prog-del" onclick="removeProgram(' + i + ')">×</button>';
+    row.querySelectorAll('input').forEach(function(el) {
+      el.addEventListener('input', function() {
+        curEntry.programs[+el.dataset.pi][el.dataset.pk] = el.value;
+        markDirty();
+      });
+    });
+    list.appendChild(row);
+  });
+}
+
+function addProgram() { curEntry.programs.push({ neta: '', enjya: '' }); renderPrograms(); markDirty(); }
+function removeProgram(i) { curEntry.programs.splice(i, 1); renderPrograms(); markDirty(); }
+function markDirty() { document.getElementById('save-btn').style.display = 'block'; }
+
+function saveDetail() {
+  curEntry.kaisu = document.getElementById('d-kaisu').value;
+  curEntry.date = document.getElementById('d-date').value;
+  curEntry.title = document.getElementById('d-title').value;
+  var newKai = document.getElementById('d-kai').value;
+  if (!newKai) { toast('会名を入力してください'); return; }
+  if (!curEntry.kaisu) { toast('回数を入力してください'); return; }
+  // 会名変更
+  if (newKai !== curKai) {
+    if (DB[curKai]) DB[curKai] = DB[curKai].filter(function(e) { return String(e.kaisu) !== String(curEntry.kaisu); });
+    if (!DB[newKai]) DB[newKai] = [];
+    curKai = newKai;
+  }
+  if (!DB[curKai]) DB[curKai] = [];
+  var found = false;
+  for (var i = 0; i < DB[curKai].length; i++) {
+    if (String(DB[curKai][i].kaisu) === String(curEntry.kaisu)) {
+      DB[curKai][i] = JSON.parse(JSON.stringify(curEntry)); found = true; break;
+    }
+  }
+  if (!found) DB[curKai].push(JSON.parse(JSON.stringify(curEntry)));
+  saveDB(DB, function() { toast('保存しました ✓'); });
+  document.getElementById('save-btn').style.display = 'none';
+}
+
+function deleteThisEntry() {
+  if (!confirm('この回を削除しますか？')) return;
+  var kai = document.getElementById('d-kai').value;
+  var kaisu = document.getElementById('d-kaisu').value;
+  if (DB[kai]) DB[kai] = DB[kai].filter(function(e) { return String(e.kaisu) !== String(kaisu); });
+  saveDB(DB, function() { toast('削除しました'); go('cover'); });
+}
+
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+// ===== JSONエクスポート =====
+function doExportJSON() {
+  var json = JSON.stringify({ version: '1.0', exported: new Date().toISOString(), data: DB }, null, 2);
+  var name = '根多帳_' + new Date().toISOString().slice(0, 10);
+  var a = document.createElement('a');
+  a.href = 'data:application/json;charset=utf-8,' + encodeURIComponent(json);
+  a.download = name + '.json';
+  a.click();
+  toast('✓ JSONを書き出しました');
+}
+
+// ===== CSVエクスポート =====
+function doExportCSV() {
+  var lines = ['\uFEFF会名,回数,日付,タイトル,ネタ,演者'];
+  Object.keys(DB).forEach(function(kai) {
+    (DB[kai] || []).forEach(function(e) {
+      var progs = e.programs || [];
+      if (!progs.length) {
+        lines.push([csvEsc(kai), csvEsc(e.kaisu), csvEsc(e.date), csvEsc(e.title), '', ''].join(','));
+      } else {
+        progs.forEach(function(p) {
+          lines.push([csvEsc(kai), csvEsc(e.kaisu), csvEsc(e.date), csvEsc(e.title), csvEsc(p.neta || ''), csvEsc(p.enjya || '')].join(','));
+        });
+      }
+    });
+  });
+  var csv = lines.join('\n');
+  var name = '根多帳_' + new Date().toISOString().slice(0, 10);
+  var a = document.createElement('a');
+  a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+  a.download = name + '.csv';
+  a.click();
+  toast('✓ CSVを書き出しました');
+}
+
+function csvEsc(s) {
+  s = String(s || '');
+  if (s.indexOf(',') >= 0 || s.indexOf('"') >= 0 || s.indexOf('\n') >= 0) return '"' + s.replace(/"/g, '""') + '"';
+  return s;
+}
+
+// ===== インポート =====
+function doImport(ev) {
+  var f = ev.target.files[0]; if (!f) return;
+  var prog = document.getElementById('import-prog');
+  prog.textContent = '読み込み中…';
+  var r = new FileReader();
+  r.onload = function(e) {
+    try {
+      var isCSV = f.name.toLowerCase().endsWith('.csv');
+      var newData;
+      if (isCSV) {
+        newData = parseCSV(e.target.result);
+      } else {
+        var parsed = JSON.parse(e.target.result);
+        newData = parsed.data || parsed;
+      }
+      var created = 0, updated = 0;
+      Object.keys(newData).forEach(function(kai) {
+        var entries = newData[kai];
+        if (!Array.isArray(entries)) return;
+        if (!DB[kai]) DB[kai] = [];
+        entries.forEach(function(entry) {
+          var found = false;
+          for (var i = 0; i < DB[kai].length; i++) {
+            if (String(DB[kai][i].kaisu) === String(entry.kaisu)) {
+              DB[kai][i] = entry; found = true; updated++; break;
+            }
+          }
+          if (!found) { DB[kai].push(entry); created++; }
+        });
+      });
+      saveDB(DB, function() {
+        prog.textContent = '✓ 完了：新規' + created + '件・更新' + updated + '件';
+        toast('✓ インポート完了');
+        buildCover();
+      });
+    } catch(err) {
+      prog.textContent = 'エラー: ' + err.message;
+    }
+  };
+  r.readAsText(f, 'UTF-8');
+  ev.target.value = '';
+}
+
+function parseCSV(text) {
+  text = text.replace(/^\uFEFF/, '');
+  var lines = text.split('\n');
+  var db = {};
+  for (var i = 1; i < lines.length; i++) {
+    var line = lines[i].trim(); if (!line) continue;
+    var cols = parseCsvLine(line);
+    var kai = cols[0]||'', kaisu = cols[1]||'', date = cols[2]||'', title = cols[3]||'', neta = cols[4]||'', enjya = cols[5]||'';
+    if (!kai) continue;
+    if (!db[kai]) db[kai] = [];
+    var found = false;
+    for (var j = 0; j < db[kai].length; j++) {
+      if (String(db[kai][j].kaisu) === String(kaisu)) {
+        if (neta || enjya) db[kai][j].programs.push({ neta: neta, enjya: enjya });
+        found = true; break;
+      }
+    }
+    if (!found) {
+      db[kai].push({ kaisu: kaisu, date: date, title: title, programs: (neta || enjya) ? [{ neta: neta, enjya: enjya }] : [] });
+    }
+  }
+  return db;
+}
+
+function parseCsvLine(line) {
+  var cols = [], cur = '', inQ = false;
+  for (var i = 0; i < line.length; i++) {
+    var c = line[i];
+    if (c === '"') { if (inQ && line[i+1] === '"') { cur += '"'; i++; } else inQ = !inQ; }
+    else if (c === ',' && !inQ) { cols.push(cur); cur = ''; }
+    else cur += c;
+  }
+  cols.push(cur);
+  return cols;
+}
+
+// ===== Service Worker =====
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('netacho_sw.js').catch(function() {});
+}
+
+// 起動
+init();
+</script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+{
+  "name": "根多帳",
+  "short_name": "根多帳",
+  "description": "高座記録管理アプリ",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#2a3824",
+  "theme_color": "#2a3824",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' fill='%232a3824'/><text x='96' y='130' font-size='110' text-anchor='middle' fill='white'>📜</text></svg>",
+      "sizes": "192x192",
+      "type": "image/svg+xml"
+    }
+  ]
+}
